@@ -1,7 +1,7 @@
 {
   "name": "pi-btw",
   "version": "0.1.0",
-  "description": "A pi extension that answers side questions immediately with /btw",
+  "description": "A pi extension for parallel side conversations with /btw",
   "type": "module",
   "license": "MIT",
   "author": "Dan Bachelder",
@@ -32,6 +32,9 @@
   "pi": {
     "extensions": [
       "./extensions"
+    ],
+    "skills": [
+      "./skills"
     ],
     "image": "https://raw.githubusercontent.com/dbachelder/pi-btw/main/docs/btw-overlay.png"
   },

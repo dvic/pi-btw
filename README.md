@@ -1,6 +1,6 @@
 # pi-btw
 
-A small [pi](https://github.com/badlogic/pi-mono) extension that adds a `/btw` command for side questions.
+A small [pi](https://github.com/badlogic/pi-mono) extension that adds a `/btw` side conversation channel.
 
 `/btw` runs immediately, even while the main agent is still busy.
 
@@ -8,13 +8,12 @@ A small [pi](https://github.com/badlogic/pi-mono) extension that adds a `/btw` c
 
 ## What it does
 
-- asks a one-off side question using the current session context
-- returns an answer immediately in an overlay
-- does **not** disturb the running agent
-- does **not** save anything by default
-- optionally saves the result into the session with `--save`
-
-Saved BTW notes are visible in the session transcript, but excluded from future LLM context.
+- opens a parallel side conversation without interrupting the main run
+- keeps a continuous BTW thread by default
+- streams answers into a widget above the editor
+- keeps BTW thread entries out of the main agent's future context
+- lets you inject the full thread, or a summary of it, back into the main agent
+- optionally saves an individual BTW exchange as a visible session note with `--save`
 
 ## Install
 
@@ -46,37 +45,85 @@ pi install /absolute/path/to/pi-btw
 
 ```text
 /btw what file defines this route?
-/btw --save what file defines this route?
-/btw -s summarize the last error in one sentence
+/btw how would you refactor this parser?
+/btw --save summarize the last error in one sentence
+/btw:new let's start a fresh thread about auth
+/btw:inject implement the plan we just discussed
+/btw:summarize turn that side thread into a short handoff
+/btw:clear
 ```
+
+## Commands
+
+### `/btw [--save] <question>`
+
+- runs right away
+- works while pi is busy
+- continues the current BTW thread
+- streams into a widget above the editor
+- persists the BTW exchange as hidden thread state
+- with `--save`, also saves that single exchange as a visible session note
+
+### `/btw:new [question]`
+
+- clears the current BTW thread
+- optionally asks the first question in the new thread immediately
+
+### `/btw:clear`
+
+- dismisses the BTW widget
+- clears the current BTW thread
+
+### `/btw:inject [instructions]`
+
+- sends the full BTW thread back to the main agent as a user message
+- if pi is busy, queues it as a follow-up
+- clears the BTW thread after sending
+
+### `/btw:summarize [instructions]`
+
+- summarizes the BTW thread with the current model
+- injects the summary into the main agent
+- if pi is busy, queues it as a follow-up
+- clears the BTW thread after sending
 
 ## Behavior
 
-### `/btw <question>`
+### Hidden BTW thread state
 
-- runs right away
-- shows the answer in an overlay
-- does not save it to the session
+BTW exchanges are persisted in the session as hidden custom entries so they:
 
-### `/btw --save <question>`
+- survive reloads and restarts
+- rehydrate the BTW widget for the current branch
+- stay out of the main agent's LLM context
 
-- if pi is idle: saves the BTW note immediately
-- if pi is busy: queues the BTW note and saves it after the current turn finishes
-- does not steer or interrupt the current agent run
+### Visible saved notes
+
+If you use `--save`, that one BTW exchange is also written as a visible custom message in the session transcript.
 
 ## Why
 
-Sometimes you want to ask a quick side question without:
+Sometimes you want to:
 
-- interrupting the current turn
-- adding noise to the main transcript
-- waiting for another user turn
+- ask a clarifying question while the main agent keeps working
+- think through next steps without derailing the current turn
+- explore an idea, then inject it back once it's ready
+
+## Included skill
+
+This package also ships a small `btw` skill so pi can better recognize when a side-conversation workflow is appropriate.
+
+It helps with discoverability and guidance, but it is not required for the extension itself to work.
 
 ## Development
 
 The extension entrypoint is:
 
 - `extensions/btw.ts`
+
+The included skill is:
+
+- `skills/btw/SKILL.md`
 
 To use it without installing:
 
